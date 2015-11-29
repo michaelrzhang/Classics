@@ -1,53 +1,110 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 
 public class testParser {
+    static ArrayList<String> mostFrequentWords;
     static Scanner sc2 = null;
     static Scanner wordScanner = null;
     static Character c = null;
     static String word = null;
     static PrintWriter writer = null;
+    static int kFrequentWords = 200;
 
     public static void main(String[] args) {
-        parseFiles("EMERSON");
+        Scanner commonwords = null;
+        try {
+            commonwords = new Scanner(new File("commonwords.txt"));
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found! (weird)");
+        }
+        mostFrequentWords = new ArrayList<String>();
+        for (int i = 0; i < kFrequentWords; i++) {
+            mostFrequentWords.add(commonwords.next());
+        }
+        commonwords.close();
+        String directoryPath = "parsedata";
+        File dir = new File(directoryPath);
+        deleteDirectory(dir);
+        if (!dir.mkdir()) {
+            System.out.println("parsedata directory not created successfully.");
+        }
+        String[] authors = {"ARISTOTLE", "DICKENS", "DOYLE", "EMERSON", "HAWTHORNE",
+        "IRVING", "JEFFERSON", "KANT", "KEATS", "MILTON", "PLATO", "POE", 
+        "SHAKESPEARE", "STEVENSON", "TWAIN", "WILDE"};
+        for (String author : authors) {
+            parseFiles(author);
+        }
     }
 
+    public static void deleteDirectory (File dir) {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            if (file.isDirectory()) {
+                deleteDirectory(dir);
+            } else {
+                file.delete();
+            }
+        }
+        dir.delete();
+    }
+
+    /**
+     * Parses all files for a given author
+     * @param author [description]
+     */
     public static void parseFiles(String author) {
+        File authorFile = new File("parsedata/" + author.toLowerCase() + ".txt");
+        try {
+            authorFile.createNewFile();
+        } catch (IOException e) {
+            System.out.println(author + "file could not be created.");
+        }
         String directoryPath = "AUTHORS/" + author;
         File dir = new File(directoryPath);
         File[] directoryListing = dir.listFiles();
-        int file = 0;
-        File directory = new File(author.toLowerCase());
-        if (!directory.mkdir()) {
-            System.out.println("Directory not created successfully");
-        }
         if (directoryListing != null) {
+            try {
+                writer = new PrintWriter(new BufferedWriter(new FileWriter(authorFile, true)));
+            } catch (IOException e) {
+                System.out.println("Writer could not be created");
+                return;
+            }
             for (File child : directoryListing) {
-                file += 1;
-                parseArticle2(child, author.toLowerCase(), file);
+                parseArticle2(child);
             } 
+            writer.close();
         } else {
             System.out.println("Error: not a directory");
         }
     }
 
     /**
+     * filePath: file to read, by default writes parsed data to authorFile in parseFiles
      * Good stack overflow on regex: http://stackoverflow.com/questions/19600875/count-the-number-of-sentence
      * Post on reading all test from file: http://stackoverflow.com/questions/326390/how-to-create-a-java-string-from-the-contents-of-a-file
      * @param filePath path to file
      */
-    public static void parseArticle2(File filePath, String author, int numfile) {
+    public static void parseArticle2(File filePath) {
         /** Stores number of occurences of words and punctuation respepectively */
         HashMap<String, Integer> wordCount = new HashMap<String, Integer>();
         List<String> lines = null;
         try {
             lines = Files.readAllLines(filePath.toPath(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            System.out.println("Error while parsing file");
-            return;
+            try {
+                lines = Files.readAllLines(filePath.toPath(), StandardCharsets.UTF_16);
+            } catch (IOException e2) {
+                System.out.println("Error while parsing file");
+                System.out.println(filePath);
+                e2.printStackTrace();
+                return;
+            }
         }
         int periods, questionMarks, exclamationMarks, numwords;
         periods = questionMarks = exclamationMarks = numwords = 0;
@@ -65,18 +122,32 @@ public class testParser {
             questionMarks += line.length() - line.replace("!", "").length();
             exclamationMarks += line.length() - line.replace("?", "").length();
         }
-        File newFile = new File(author + "/" + String.valueOf(numfile) + ".txt");
-        try {
-            writer = new PrintWriter(newFile);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        // only considering files that are large enough
+        if (numwords > 1000) {
+            writer.print((double) numwords);
+            writer.print(" ");
+            writer.print((double) periods);
+            writer.print(" ");
+            writer.print((double) questionMarks);
+            writer.print(" ");
+            writer.print((double) exclamationMarks);
+            writer.print(" ");
+            for (int i = 0; i < kFrequentWords; i++) {
+                Integer count = wordCount.get(mostFrequentWords.get(i));
+                if (count != null) {
+                    writer.print((double) count);    
+                } else {
+                    writer.print(0.0);
+                }
+                writer.print(" ");
+            }
+            writer.println();
+        } else {
+            return;
         }
         System.out.println(numwords);
-        writer.println(numwords);
-        writer.println(periods);
-        writer.println(questionMarks);
-        writer.println(exclamationMarks);
-        writer.close();
+
+    
         /** Debugging */
         // for (String s : wordCount.keySet()) {
         //     System.out.println(s);

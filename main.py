@@ -1,61 +1,74 @@
 # import neuralnetwork
 import numpy as np
-import numpy.matlib
-# Aristotle 1
-# Emerson 2
-# Shakspeare 3
-# 
-# Text classification
-# possibly extend to tweets? more literature?
+from sklearn import preprocessing
+from logisticregression import *
+
+# try random intialization
+# smaller test cases
+
+""" 
+Author: Michael Zhang
+This project is intended to help me practice implement neural networks.
+It is my first time using numpy. I will be trying to implement various
+machine learning algorithms to determine the authors of literary works.
+"""
 
 import numpy as np
 import neuralnetwork
- # def __init__(self, hidden_layers, size_of_hidden_layer, data, num_data, output, num_output):
- #        """Initializes random layers and biases for every layer
- #        Layers go firstlayer, hiddenlayers, lastlayer
- #        """
- #        self.layers = layers
- #        self.first_layer = np.asmatrix(np.random(size_of_hidden_layer, num_data))
- #        self.last_layer = np.asmatrix(np.random(num_output, size_of_hidden_layer))
- #        self.hidden_layers = [np.asmatrix(np.random(
- #                    num_output, size_of_hidden_layer)) for i in range(hiddenlayers - 1)]
- #        self.biases = [np.asmatrix(np.random(
- #                    size_of_hidden_layer, 1)) for i in range(hiddenlayers)]
- #        self.last_bias = np.asmatrix(np.random(output, 1))
 
-def get_author_data(name, num):
-    """ Returns a list with num elements. Each element represents
-    data from a particular author.
+authors = ['aristotle', 'dickens', 'doyle', 'emerson', 'hawthorne', 'irving', 
+    'jefferson', 'kant', 'keats', 'milton', 'plato', 'poe', 
+    'shakespeare', 'stevenson', 'twain', 'wilde']
+
+def get_author_data(name, fraction = 1):
+    """ 
+    Returns a list with FRACTION of works by NAME.
+    Fraction: how much of the data to get
     """
+    with open("parsedata/" + name + ".txt") as f:
+        content = f.readlines()    
+    content = [x.strip('\n') for x in content]
     data = []
-    for i in range(1, num + 1):
-        fname = name + "/" + str(i) + ".txt"
-        lines = [line.rstrip('\n') for line in open(fname)]
-        data.append(lines)
-    return data
+    for line in content:
+        data.append(list(map(float, line.split())))
+    endindex = int(round(len(data) * fraction))
+    return data[0: endindex]
 
-# write function for testing, specifying authors later
-aristotle = get_author_data("aristotle", 10)
-emerson = get_author_data("emerson", 10)
-shakespeare = get_author_data("shakespeare", 10)
-# sets up 30 training examples
-x = np.zeros(shape=(30,4), dtype = np.float64)
-x[0:10] = aristotle
-x[10:20] = emerson
-x[20:30] = shakespeare
-y = np.zeros(shape=(30,1))
-y[10:20] = 1
-y[20:30] = 2
+def get_all_author_data(fraction = 1):
+    """
+    Grabs FRACTION data from all available authors
+    Aristotle is hardcoded in in this case.
+    """
+    i = 0
+    data =  np.asarray(get_author_data('aristotle', fraction))
+    x = data
+    y = np.ones((np.size(data, 0), 1)) * i
+    i = i + 1
+    for author in authors[1:]:
+        data = np.asarray(get_author_data(author, fraction))
+        x = np.append(x, data, 0)
+        y = np.append(y, np.ones((np.size(data, 0), 1)) * i, 0)
+        i = i + 1
+    return [x, y]
 
 def validate(predictions, actual):
     compare = np.equal(predictions, actual)
     return np.sum(compare) / compare.size
 
-def least_squares_naive(x, y):
-    """ Naively attempts to model data with least squares
-    x must be full rank and skinny for least squares to work
-    """
-    coeff = np.linalg.lstsq(x,y)[0]
-    raw_predictions = np.asmatrix(x) * np.asmatrix(coeff)
-    return numpy.round(raw_predictions)
+data, result = get_all_author_data(0.8)
+result_flat = np.ravel(result)
+data = standardize(data)
+
+# Using one-v-all logistic regression
+np.insert(data, 0, 1, axis = 1)
+author = 0
+all_theta = logistic_regression(data, result, author)
+for author in range(1, 16):
+    print(author)
+    theta_temp = logistic_regression(data, result, author)
+    all_theta = np.concatenate((all_theta, theta_temp), 1)
+
+model_values = np.dot(data, all_theta)
+predictions = np.argmax(model_values, 1)
+
 
