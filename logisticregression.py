@@ -18,7 +18,8 @@ def standardize(m):
         m[:, i] = x
     return m
 
-def logistic_regression(data, result, num, learning_rate = 0.0000000001):
+
+def multiclass_logistic_regression(data, result, learning_rate = 0.0000000001):
     """
     Uses random initialization of weights to run logistic regression
     NUM is author we are currently classifying
@@ -27,6 +28,17 @@ def logistic_regression(data, result, num, learning_rate = 0.0000000001):
     target = np.array(target, dtype=np.float128)
     theta = np.random.randn(np.size(data, 1), 1)
     return compute_grad(theta, data, target, learning_rate)
+
+
+# def logistic_regression(data, result, num, learning_rate = 0.0000000001):
+#     """
+#     Uses random initialization of weights to run logistic regression
+#     NUM is author we are currently classifying
+#     """
+#     target = np.ones((np.size(result,0), 1)) * num == result
+#     target = np.array(target, dtype=np.float128)
+#     theta = np.random.randn(np.size(data, 1), 1)
+#     return compute_grad(theta, data, target, learning_rate)
 
 def compute_grad(theta, data, target, learning_rate = 0.0000000001):
     """

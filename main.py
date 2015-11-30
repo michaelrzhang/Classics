@@ -1,6 +1,7 @@
 # import neuralnetwork
 import numpy as np
 from sklearn import preprocessing
+from sklearn import svm
 from logisticregression import *
 
 # try random intialization
@@ -34,6 +35,14 @@ def get_author_data(name, fraction = 1):
     endindex = int(round(len(data) * fraction))
     return data[0: endindex]
 
+def standardize(m):
+    columns = np.shape(m)[1]
+    for i in range(columns):
+        x = m[:,i]
+        x = preprocessing.scale(x)
+        m[:, i] = x
+    return m
+
 def get_all_author_data(fraction = 1):
     """
     Grabs FRACTION data from all available authors
@@ -55,20 +64,47 @@ def validate(predictions, actual):
     compare = np.equal(predictions, actual)
     return np.sum(compare) / compare.size
 
-data, result = get_all_author_data(0.8)
-result_flat = np.ravel(result)
-data = standardize(data)
+#Preprocessing
+# need a way to preprocess all data immediately
+data_full, result_full = get_all_author_data(1)
+data_full = standardize(data_full)
+result_full = np.ravel(result_full)
+
+training_data = np.size(result_full) * 0.8 
+data = data_full[:training_data]
+result = result_full[:training_data]
+
+clf = svm.SVC()
+clf.fit(data, result)
+svm_predictions = np.array([[clf.predict(data[i].reshape(1, -1))[0]] for i in range(np.size(result))])
+print("svm result: " + str(validate(svm_predictions, result)))
+svm_predictions = np.array([[clf.predict(data_full[i].reshape(1, -1))[0]] for i in range(np.size(result_full))])
+print("svm result full: " + str(validate(svm_predictions, result_full)))
+
+clf2 = svm.SVC(C = 100)
+clf2.fit(data, result)
+svm_predictions = np.array([[clf2.predict(data[i].reshape(1, -1))[0]] for i in range(np.size(result))])
+print("svm2 result: " + str(validate(svm_predictions, result)))
+svm_predictions = np.array([[clf.predict(data_full[i].reshape(1, -1))[0]] for i in range(np.size(result_full))])
+print("svm2 result full: " + str(validate(svm_predictions, result_full)))
+
+
+# Issue I am dealing with:
+# I want to use a subset of my data as the training data, but I still want to standardize everything altogether
+# Solution: write python script to process all the files
+
+
 
 # Using one-v-all logistic regression
-np.insert(data, 0, 1, axis = 1)
-author = 0
-all_theta = logistic_regression(data, result, author)
-for author in range(1, 16):
-    print(author)
-    theta_temp = logistic_regression(data, result, author)
-    all_theta = np.concatenate((all_theta, theta_temp), 1)
+# np.insert(data, 0, 1, axis = 1)
+# author = 0
+# all_theta = logistic_regression(data, result, author)
+# for author in range(1, 16):
+#     print(author)
+#     theta_temp = logistic_regression(data, result, author)
+#     all_theta = np.concatenate((all_theta, theta_temp), 1)
 
-model_values = np.dot(data, all_theta)
-predictions = np.argmax(model_values, 1)
+# model_values = np.dot(data, all_theta)
+# predictions = np.argmax(model_values, 1)
 
 
