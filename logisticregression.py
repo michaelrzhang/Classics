@@ -1,6 +1,8 @@
 import numpy as np
 from sklearn import preprocessing
 
+#should try using gradient descent algorithm
+
 def sigmoid(z):
     """The sigmoid function."""
     return 1.0 / (1.0 + np.exp(-z))
@@ -21,7 +23,7 @@ class LogisticRegression:
         """
         target = np.ones((np.size(result,0), 1)) * num == result
         target = np.array(target, dtype=np.float128)
-        theta = np.random.randn(np.shape(data)[1], 1)
+        theta = np.random.randn(np.shape(data)[1], 1) / 10
         # print("Debugging")
         # print(theta)
         # print(np.shape(theta))
@@ -52,8 +54,8 @@ class LogisticRegression:
         """
         Runs the gradient descent algorithm to determine the best theta
         """
-        # for i in range(iterations):
-        while True:
+        for i in range(iterations):
+        # while True:
             predictions = sigmoid(np.dot(data, theta)) 
             difference = predictions - target
             theta = theta - np.dot(np.transpose(data), difference) * learning_rate / np.size(theta, 0)

@@ -1,8 +1,7 @@
-# import neuralnetwork
+import neuralnetwork
 import numpy as np
 from sklearn import preprocessing
 from sklearn import svm
-from logisticregression import *
 
 # try random intialization
 # smaller test cases
@@ -13,9 +12,6 @@ This project is intended to help me practice implement neural networks.
 It is my first time using numpy. I will be trying to implement various
 machine learning algorithms to determine the authors of literary works.
 """
-
-import numpy as np
-import neuralnetwork
 
 authors = ['aristotle', 'dickens', 'doyle', 'emerson', 'hawthorne', 'irving', 
     'jefferson', 'kant', 'keats', 'milton', 'plato', 'poe', 
@@ -34,14 +30,6 @@ def get_author_data(name, fraction = 1):
         data.append(list(map(float, line.split())))
     endindex = int(round(len(data) * fraction))
     return data[0: endindex]
-
-# def standardize(m):
-#     columns = np.shape(m)[1]
-#     for i in range(columns):
-#         x = m[:,i]
-#         x = preprocessing.scale(x)
-#         m[:, i] = x
-#     return m
 
 def get_all_author_data(fraction = 1):
     """
@@ -64,6 +52,16 @@ def validate(predictions, actual):
     compare = np.equal(predictions, actual)
     return np.sum(compare) / compare.size
 
+def one_vs_all(self, data, result, num, learning_rate = 0.0000000001):
+        """
+        Uses random initialization of weights to run logistic regression
+        NUM is the group that is labeled 1
+        """
+        target = np.ones((np.size(result,0), 1)) * num == result
+        target = np.array(target, dtype=np.float128)
+        theta = np.random.randn(np.shape(data)[1], 1) / 10
+
+# need to organize code better
 #Preprocessing
 data, result = get_all_author_data(0.8)
 training_data_scaler = preprocessing.StandardScaler().fit(data)
@@ -71,6 +69,7 @@ data_full, result_full = get_all_author_data(1)
 data = training_data_scaler.transform(data)
 data_full = training_data_scaler.transform(data_full)
 
+"""Default SVC"""
 clf = svm.SVC()
 clf.fit(data, np.ravel(result))
 svm_predictions = np.array([[clf.predict(data[i].reshape(1, -1))[0]] for i in range(np.size(result))])
@@ -78,6 +77,7 @@ print("svm result: " + str(validate(svm_predictions, result)))
 svm_predictions = np.array([[clf.predict(data_full[i].reshape(1, -1))[0]] for i in range(np.size(result_full))])
 print("svm result full: " + str(validate(svm_predictions, result_full)))
 
+"""Adjusted parameter C"""
 clf2 = svm.SVC(C = 1000)
 clf2.fit(data, np.ravel(result))
 svm_predictions = np.array([[clf2.predict(data[i].reshape(1, -1))[0]] for i in range(np.size(result))])
@@ -85,6 +85,10 @@ print("svm2 result: " + str(validate(svm_predictions, result)))
 svm_predictions = np.array([[clf2.predict(data_full[i].reshape(1, -1))[0]] for i in range(np.size(result_full))])
 print("svm2 result full: " + str(validate(svm_predictions, result_full)))
 
+"""Neural network"""
+sizes = []
+
+# I am having issues with convergence with this model
 # Using one-v-all logistic regression
 # np.insert(data, 0, 1, axis = 1)
 # author = 0
