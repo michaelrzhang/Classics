@@ -100,6 +100,7 @@ for i in range(np.shape(result)[0]):
 testing = neuralnetwork.NeuralNetwork(sizes)
 # Initial predictions
 testing.make_predictions(data)
+testing.train(data, result_matrix, 5)
 # target = []
 # for r in result:
 #     output = np.zeros([categories, 1])
