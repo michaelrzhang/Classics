@@ -52,14 +52,14 @@ def validate(predictions, actual):
     compare = np.equal(predictions, actual)
     return np.sum(compare) / compare.size
 
-def one_vs_all(self, data, result, num, learning_rate = 0.0000000001):
-        """
-        Uses random initialization of weights to run logistic regression
-        NUM is the group that is labeled 1
-        """
-        target = np.ones((np.size(result,0), 1)) * num == result
-        target = np.array(target, dtype=np.float128)
-        theta = np.random.randn(np.shape(data)[1], 1) / 10
+# def one_vs_all(self, data, result, num, learning_rate = 0.0000000001):
+#         """
+#         Uses random initialization of weights to run logistic regression
+#         NUM is the group that is labeled 1
+#         """
+#         target = np.ones((np.size(result,0), 1)) * num == result
+#         target = np.array(target, dtype=np.float128)
+#         theta = np.random.randn(np.shape(data)[1], 1) / 10
 
 # need to organize code better
 #Preprocessing
@@ -86,7 +86,27 @@ svm_predictions = np.array([[clf2.predict(data_full[i].reshape(1, -1))[0]] for i
 print("svm2 result full: " + str(validate(svm_predictions, result_full)))
 
 """Neural network"""
-sizes = []
+"""
+Need to first modify data into usable format
+Each piece of data should have an input that is 204x1 and output that is 16x1
+
+The below code is trying to convert output to vectors with 1s in one entry(the correct category) and 0s everywhere else
+"""
+sizes = [204, 50, 16]
+categories = 16
+result_matrix = np.zeros([np.shape(result)[0], categories])
+for i in range(np.shape(result)[0]):
+    result_matrix[i][result[i][0]] = 1
+testing = neuralnetwork.NeuralNetwork(sizes)
+# Initial predictions
+testing.make_predictions(data)
+# target = []
+# for r in result:
+#     output = np.zeros([categories, 1])
+#     output[r[0]] = 1
+#     target += output
+
+
 
 # I am having issues with convergence with this model
 # Using one-v-all logistic regression

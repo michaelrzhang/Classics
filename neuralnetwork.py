@@ -1,6 +1,12 @@
 import numpy as np
+"""
+Much of this code is motivated from Andrew Ng's course
+and Michael Nielsen's Neural Networks and Deep Learning book
 
-class NN:
+author: Michael Zhang
+"""
+
+class NeuralNetwork:
     """Using neural network that forward propagates
     and then improves through back propagation.
     """
@@ -27,8 +33,20 @@ class NN:
                         for output_size, input_size in zip(sizes[1:], sizes[:-1])]
         self.biases = [np.random.randn(layer_size, 1) for layer_size in sizes[1:]]  
 
-    def feedforward():
-        return
+    def make_predictions(self, test_input):
+        """
+        Given list of input vectors, returns the neural network prediction for each 
+        vector.
+        """
+        return [np.argmax(self.predict(x)) for x in test_input]
+
+    def predict(self, x):
+        """Returns output of neural network given x as input"""
+        assert x.size == self.sizes[0]
+        output = x.reshape(self.sizes[0], 1)
+        for w, b in zip(self.weights, self.biases):
+            output = sigmoid(np.dot(w, output) + b)
+        return output
 
     def backpropagte():
         return
