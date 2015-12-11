@@ -14,7 +14,7 @@ public class testParser {
     static Character c = null;
     static String word = null;
     static PrintWriter writer = null;
-    static int kFrequentWords = 200;
+    static int kFrequentWords = 1000;
 
     public static void main(String[] args) {
         Scanner commonwords = null;
@@ -28,7 +28,7 @@ public class testParser {
             mostFrequentWords.add(commonwords.next());
         }
         commonwords.close();
-        String directoryPath = "parsedata";
+        String directoryPath = "parsedatamore";
         File dir = new File(directoryPath);
         deleteDirectory(dir);
         if (!dir.mkdir()) {
@@ -59,7 +59,7 @@ public class testParser {
      * @param author [description]
      */
     public static void parseFiles(String author) {
-        File authorFile = new File("parsedata/" + author.toLowerCase() + ".txt");
+        File authorFile = new File("parsedatamore/" + author.toLowerCase() + ".txt");
         try {
             authorFile.createNewFile();
         } catch (IOException e) {

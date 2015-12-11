@@ -13,6 +13,9 @@ It is my first time using numpy. I will be trying to implement various
 machine learning algorithms to determine the authors of literary works.
 """
 
+# filepaths = parsedata, parsedatamore
+# paramater_size = 204, 1004
+
 authors = ['aristotle', 'dickens', 'doyle', 'emerson', 'hawthorne', 'irving', 
     'jefferson', 'kant', 'keats', 'milton', 'plato', 'poe', 
     'shakespeare', 'stevenson', 'twain', 'wilde']
@@ -92,7 +95,7 @@ Each piece of data should have an input that is 204x1 and output that is 16x1
 
 The below code is trying to convert output to vectors with 1s in one entry(the correct category) and 0s everywhere else
 """
-sizes = [204, 50, 16]
+sizes = [204, 100, 16]
 categories = 16
 result_matrix = np.zeros([np.shape(result)[0], categories])
 for i in range(np.shape(result)[0]):
@@ -100,7 +103,7 @@ for i in range(np.shape(result)[0]):
 testing = neuralnetwork.NeuralNetwork(sizes)
 # Initial predictions
 initial = testing.make_predictions(data)
-for i in range(20):
+for i in range(8):
     print(testing.compute_cost(data, result_matrix))
     testing.train(data, result_matrix, 100)
 

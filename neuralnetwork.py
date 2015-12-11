@@ -29,9 +29,10 @@ class NeuralNetwork:
         """
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.weights = [np.random.randn(output_size, input_size) / 2 
+        # good initialization
+        self.weights = [np.random.randn(output_size, input_size) / np.sqrt(input_size) 
                         for output_size, input_size in zip(sizes[1:], sizes[:-1])]
-        self.biases = [np.random.randn(layer_size, 1) / 2 for layer_size in sizes[1:]]  
+        self.biases = [np.random.randn(layer_size, 1) for layer_size in sizes[1:]]  
 
     def make_predictions(self, test_input):
         """
@@ -57,7 +58,7 @@ class NeuralNetwork:
         return cost
 
     # should play around with parallelizing this code
-    def train(self, training_in, training_out, training_amount, rate = 0.5):   
+    def train(self, training_in, training_out, training_amount, rate = 0.2):   
         """
         Runs the backpropation algorithm AMOUNT times with learning RATE
         Also takes in training data and desired results.
@@ -112,7 +113,28 @@ class NeuralNetwork:
             bias_derivatives[-1 * layer] = propagated_error
             weight_derivatives[-1 * layer] = np.dot(propagated_error, activations[-1 * layer - 1].transpose())
         return weight_derivatives, bias_derivatives
-       
+
+# From Michael Nielsen
+class CrossEntropyCost(object):
+
+    @staticmethod
+    def fn(a, y):
+        return np.sum(np.nan_to_num(-y*np.log(a)-(1-y)*np.log(1-a)))
+
+    @staticmethod
+    def delta(z, a, y):
+        return (a-y)
+
+class QuadraticCost(object):
+
+    @staticmethod
+    def fn(a, y):
+        return 0.5*np.linalg.norm(a-y)**2
+
+    @staticmethod
+    def delta(z, a, y):
+        return (a-y) * sigmoid_prime(z)
+
 
 def sigmoid(z):
     """The sigmoid function."""
