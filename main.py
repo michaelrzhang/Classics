@@ -99,8 +99,11 @@ for i in range(np.shape(result)[0]):
     result_matrix[i][result[i][0]] = 1
 testing = neuralnetwork.NeuralNetwork(sizes)
 # Initial predictions
-testing.make_predictions(data)
-testing.train(data, result_matrix, 5)
+initial = testing.make_predictions(data)
+for i in range(20):
+    print(testing.compute_cost(data, result_matrix))
+    testing.train(data, result_matrix, 100)
+
 # target = []
 # for r in result:
 #     output = np.zeros([categories, 1])

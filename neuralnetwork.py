@@ -29,9 +29,9 @@ class NeuralNetwork:
         """
         self.num_layers = len(sizes)
         self.sizes = sizes
-        self.weights = [np.random.randn(output_size, input_size)
+        self.weights = [np.random.randn(output_size, input_size) / 2 
                         for output_size, input_size in zip(sizes[1:], sizes[:-1])]
-        self.biases = [np.random.randn(layer_size, 1) for layer_size in sizes[1:]]  
+        self.biases = [np.random.randn(layer_size, 1) / 2 for layer_size in sizes[1:]]  
 
     def make_predictions(self, test_input):
         """
@@ -48,8 +48,16 @@ class NeuralNetwork:
             output = sigmoid(np.dot(w, output) + b)
         return output
 
+    def compute_cost(self, x, y):
+        cost = 0
+        for example, target in zip(x, y):
+            prediction = self.predict(example)
+            target = target.reshape(target.size, 1)
+            cost += np.linalg.norm(prediction - target)
+        return cost
+
     # should play around with parallelizing this code
-    def train(self, training_in, training_out, training_amount, rate = 0.1):   
+    def train(self, training_in, training_out, training_amount, rate = 0.5):   
         """
         Runs the backpropation algorithm AMOUNT times with learning RATE
         Also takes in training data and desired results.
@@ -82,23 +90,27 @@ class NeuralNetwork:
         zs = []
         current = x
         for weight, bias in zip(self.weights, self.biases):
-            current = np.dot(current, weight) + bias
+            current = np.dot(weight, current) + bias
             zs.append(current)
             activation = sigmoid(current)
             activations.append(activation)
 
-        error = (activations[-1] - y) * sigmoid_prime(z[-1])
+        error = (activations[-1] - y) * sigmoid_prime(zs[-1])
         # back propagation of error
         # Note to self (and readers): understanding the following code/equations is probably the hardest part
         # It's worthwhile to walk through a smaller example to better understand exactly what happens.
         
+        # need to handle last layer separately otherwise -1(1) + 1 = 0, and we can't use negative indiceing
+        bias_derivatives[-1] = error
+        weight_derivatives[-1] = np.dot(error, activations[-2].transpose())
+        propagated_error = error
         # traversing layers in reverse order, while propagating error back
         # follows the equations from Nielsen's book
-        for layer in range(1, self.num_layers):
+        for layer in range(2, self.num_layers):
             z = zs[-1 * layer]
-            propagated_error = np.dot(self.weights(-1 * layer + 1).transpose(), propagated_error) * sigmoid_prime(z)
-            bias_derivatives[-1 * layer] = error
-            weight_derivatives[-1 * layer] = np.dot(error, activations[-1 * layers - 1].transpose())
+            propagated_error = np.dot(self.weights[-1 * layer + 1].transpose(), propagated_error) * sigmoid_prime(z)
+            bias_derivatives[-1 * layer] = propagated_error
+            weight_derivatives[-1 * layer] = np.dot(propagated_error, activations[-1 * layer - 1].transpose())
         return weight_derivatives, bias_derivatives
        
 
